@@ -24,13 +24,11 @@
           width="100"
         />
       </div>
-
       <v-spacer></v-spacer>
-
     </v-app-bar>
 
     <v-content>
-      <router-link></router-link>
+      <router-view></router-view>
     </v-content>
   </v-app>
 </template>
