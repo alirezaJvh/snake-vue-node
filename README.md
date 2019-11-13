@@ -1,4 +1,4 @@
-# jj-snake
+# snake-vue-node
 
 ## Project setup
 ```
