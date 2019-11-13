@@ -17,7 +17,8 @@
                                  class="cell d-flex justify-center align-center "
                                  :style="{width:`${cellWidth}px`, height: `${cellHeight}px`}">
                                 <div class="food"
-                                     :class="randomBackground()"></div>
+                                     :class="randomBackground()">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -42,45 +43,98 @@
             makeBoardGame() {
                 this.initBoard();
                 this.initCell();
-                this.initFoodScore()
+                this.foodScoreStyle()
             },
             initBoard() {
                 this.$log.debug('board', this.$refs);
-                let board = this.$refs.boqard;
+                let board = this.$refs.board;
                 board.style.width = `${this.boardWidth * this.cellWidth}px`;
                 board.style.height = `${this.boardHeight * this.cellHeight}px`;
             },
             initCell() {
-
+                this.$log.debug('init cell');
+                let x = 1;
+                while (x <= this.boardWidth) {
+                    let y = 1;
+                    while (y <= this.boardHeight) {
+                        this.cells[`${x}-${y}`] = {
+                            x,
+                            y,
+                            food: this.initFoodScore(),
+                            snake: false
+                        };
+                        y += 1;
+                    }
+                    x += 1;
+                }
+                this.$log.debug('foods', this.cells)
             },
             initFoodScore() {
-
+                let score = Math.ceil((Math.random() * 10));
+                return (score === 10 ? 9 : score);
             },
             randomBackground() {
                 let bgColor = Math.floor(Math.random() * 10);
                 switch (bgColor) {
                     case 0:
-                        return 'success lighten-1 fadeIn';
+                        return 'success lighten-1';
                     case 1:
-                        return 'warning lighten-1 fadeIn';
+                        return 'warning lighten-1';
                     case 2:
-                        return 'warning lighten-3 fadeIn';
+                        return 'warning lighten-3';
                     case 3:
-                        return 'success lighten-3 bounceIn';
+                        return 'success lighten-3';
                     case 4:
-                        return 'error lighten-1 zoomIn';
+                        return 'error lighten-1';
                     case 5:
-                        return 'error lighten-3 bounceIn';
+                        return 'error lighten-3';
                     case 6:
-                        return 'info lighten-3 zoomIn';
+                        return 'info lighten-3';
                     case 7:
-                        return 'purple lighten-3 bounceIn';
+                        return 'purple lighten-3';
                     case 8:
-                        return 'grey darken-1 zoomIn';
+                        return 'grey darken-1';
                     case 9:
-                        return 'grey lighten-5 zoomIn';
+                        return 'grey lighten-5';
                 }
-            }
+            },
+            foodScoreStyle() {
+                const coef = 3;
+                let x = 1;
+                while (x <= this.boardWidth) {
+                    let y = 1;
+                    while (y <= this.boardHeight) {
+                        let cell = this.$refs[`${x}-${y}`][0];
+                        let food = cell.children[0];
+                        food.style.width = `${this.cells[`${x}-${y}`].food * coef}px`;
+                        food.style.height = `${this.cells[`${x}-${y}`].food * coef}px`;
+                        this.addAnimation(food);
+                        y++;
+                    }
+                    x++;
+                }
+            },
+          addAnimation(food) {
+              const time = '3.5s';
+              switch (Math.ceil(Math.random() * 5)) {
+                case 1:
+                  food.style.animation = `zoomInRight ${time}`;
+                      break;
+                case 2:
+                  food.style.animation = `zoomInLeft ${time}`;
+                  break;
+                case 3:
+                  food.style.animation = `zoomInUp ${time}`;
+                  break;
+                case 4:
+                  food.style.animation = `zoomInDown ${time}`;
+                  break;
+                case 5:
+                  food.style.animation = `zoomInUp ${time}`;
+                  break;
+              }
+              this.$log.debug()
+          }
         },
         mounted() {
             this.makeBoardGame()
