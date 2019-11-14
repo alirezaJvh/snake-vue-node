@@ -37,11 +37,13 @@
         components: {},
         data: () => ({
             snake: {
+                isRunning: true,
                 initLength: 4,
                 direction: 'right',
                 body: []
             },
-            scores: 0
+            scores: 0,
+            defaultSpeed: 150
         }),
         mixins: [boardMixin],
         methods: {
@@ -59,33 +61,61 @@
             drawSnake() {
                 for (let i = 0; i < this.snake.body.length; i++) {
                     if (i > 0) {
-                        this.getSnakeBodyPart(i).appendChild(this.addSnakeBody('snake-body'))
+                        this.getSnakeBodyPart(i).appendChild(this.makeSnakeBody('snake-body'))
                     } else {
-                        this.getSnakeBodyPart(i).appendChild(this.addSnakeBody('snake-head'))
+                        this.getSnakeBodyPart(i).appendChild(this.makeSnakeBody('snake-head'))
                     }
                 }
 
-                if (this.canSnakeEatFooad()) {
+                if (this.canSnakeEatFood()) {
                     this.increaseSnakeScore();
-                    // this.addSnakeBodyPart();
+                    this.addSnakeBody();
                 }
 
+                if (this.isSnakeOnItself()) {
+                    this.stopTheGame()
+                }
+
+            },
+            stopTheGame() {
+                this.snake.isRunning = false;
+                this.$log.debug('stop game')
+            //    TODO : make game stop
+            },
+            getSnakeHeadCell() {
+                // return cell which head snake is in it
+                return this.snake.body[0]
+            },
+            isSnakeOnItself() {
+                const snakeHead = this.getSnakeHeadCell();
+                let isItsBodyOnHead = false;
+                for (let i = 0; i < snakeHead.children.length; i++) {
+                    // if snake head has children with snake-body class it means that snake head eat its body
+                    if (snakeHead.classList.value.includes('snake-body')) {
+                        isItsBodyOnHead = true
+                    }
+                }
+                return isItsBodyOnHead
+
+            },
+            addSnakeBody() {
+                //     TODO : how to add snake body
+                this.$log.debug('add snake body')
             },
             increaseSnakeScore() {
                 const c = 5;
                 let score = this.snake.body[0].food;
                 this.$log.debug(this.snake.body[0]);
                 this.scores = c * score + 1
-
             },
-            canSnakeEatFooad() {
+            canSnakeEatFood() {
                 // snake can meat food when its body length is one
                 return this.snake.body.length === 1
             },
             getSnakeBodyPart(index) {
                 return this.snake.body[index]
             },
-            addSnakeBody(snakeClass) {
+            makeSnakeBody(snakeClass) {
                 let snakeBody = document.createElement('div');
                 snakeBody.classList.add(snakeClass);
                 return snakeBody
