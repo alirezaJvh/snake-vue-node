@@ -39,7 +39,7 @@
             snake: {
                 isRunning: true,
                 initLength: 4,
-                speed: 150,
+                speed: 800,
                 direction: 'right',
                 body: []
             },
@@ -50,14 +50,20 @@
         methods: {
 
             initSnake() {
-                let [xHead, yHead] = [8, 10];
-                let body;
-                for (let i = 0; i < this.snake.initLength; i++) {
-                    body = this.cells[`${xHead}-${yHead - i}`];
-                    this.snake.body.push(body)
-                }
-                this.$log.debug(this.snake);
-                this.drawSnake()
+                return new Promise((resolve => {
+                    let [xHead, yHead] = [8, 10];
+                    let body;
+                    for (let i = 0; i < this.snake.initLength; i++) {
+                        body = this.cells[`${xHead}-${yHead - i}`];
+                        this.snake.body.push(body)
+                    }
+                    this.$log.debug(this.snake);
+                    setTimeout(() => {
+                        this.drawSnake();
+                        resolve()
+                    }, 2000)
+                }))
+
             },
             drawSnake() {
                 for (let i = 0; i < this.snake.body.length; i++) {
@@ -76,7 +82,13 @@
                 if (this.isSnakeOnItself()) {
                     this.stopTheGame()
                 }
-
+            },
+            isHittingTheWall() {
+                let head = this.snake.body[0];
+                this.$log.debug('head', this.snake.body);
+                if (head.x > this.boardWidth || head.x < 1) return true;
+                if (head.y > this.boardHeight || head.y < 1) return true;
+                return false
             },
             startGameLoop() {
                 if (!this.snake.isRunning) return false;
@@ -85,47 +97,83 @@
                 }, this.snake.speed)
             },
             moveSnake() {
+                this.changeSnakeBodyPositions();
+                if (this.isHittingTheWall()) {
+                    this.$log.debug('hitting the wall');
+                    this.stopTheGame()
+                }
+                if (this.canSnakeEatFood()) {
+                    this.snakeEatFood()
+                } else {
+                    this.decreaseSnakeLength()
+                }
+                this.drawSnake()
+
+            },
+            changeSnakeBodyPositions() {
                 const oldSnakeCoords = this.getOldSnakeCells();
                 for (let i = 0; i < this.snake.body.length; i++) {
                     if (i === 0) {
                         /* if it's head, just increment/decrement X or Y depending on moving direction */
-                        const oldSnakeHead = this.getOldSnakeHeadCell();
-                        this.$log.debug('old snake', oldSnakeHead);
-                        this.removeHeadSnakeCell(oldSnakeHead);
+                        this.removeHeadSnakeCell();
                         this.moveSnakeHead()
                     } else {
-
+                        this.$log.debug('i', i);
+                        const oldBodyCell = this.getSnakeBodyPart(i);
+                        this.removeSnakeBodyCell(oldBodyCell);
+                        this.snake.body[i].x = oldSnakeCoords[i - 1].x;
+                        this.snake.body[i].y = oldSnakeCoords[i - 1].y;
                     }
                 }
+            },
+            decreaseSnakeLength() {
+                this.snake.body.pop()
             },
             moveSnakeHead() {
                 switch (this.snake.direction) {
                     case 'up':
+                        this.$log.debug('**** move up ****');
+                        this.snake.body[0].x += 1;
                         break;
                     case 'down':
+                        this.$log.debug('***** move down *****');
+                        this.snake.body[0].x -= 1;
                         break;
                     case 'right':
-                        this.$log.debug('direction here', this.snake.body);
+                        this.$log.debug('***** move right *****');
+                        this.snake.body[0].y += 1;
                         break;
                     case 'left':
+                        this.$log.debug('***** move left ******');
+                        this.snake.body[0].y -= 1;
+                        break;
+                    default:
                         break;
                 }
             },
-            removeHeadSnakeCell(oldSnakeHead) {
-                let headCell = this.$refs[`${oldSnakeHead.x}-${oldSnakeHead.y}`][0];
-                headCell.removeChild(headCell.children[1])
+            removeSnakeBodyCell(oldSnakeBody) {
+                oldSnakeBody.removeChild(oldSnakeBody.children[1]);
             },
-            getOldSnakeHeadCell() {
-                return this.snake.body[0]
+            removeHeadSnakeCell() {
+                let oldSnakeHead = this.getSnakeBodyPart(0);
+                this.removeSnakeBodyCell(oldSnakeHead)
             },
             getOldSnakeCells() {
-                return this.snake.body
+                const oldParts = [];
+                this.snake.body.forEach((part) => {
+                    oldParts.push({
+                        x: part.x,
+                        y: part.y,
+                        food: part.food
+                    })
+                });
+                return oldParts
             },
             stopTheGame() {
                 this.snake.isRunning = false;
+                clearInterval(this.interval);
                 this.$log.debug('stop game');
                 window.alert('game over')
-                //    TODO : make game stop
             },
             getSnakeHeadCell() {
                 // return cell which head snake is in it
@@ -146,6 +194,9 @@
             addSnakeBody() {
                 //     TODO : how to add snake body
                 this.$log.debug('add snake body')
+            },
+            snakeEatFood() {
+                this.$log.debug('eat x', this.snake.body[0].x, 'eat y', this.snake.body[0].y, 'length', this.snake.body.length)
             },
             increaseSnakeScore() {
                 const c = 5;
@@ -169,8 +220,11 @@
         },
         mounted() {
             this.makeBoardGame();
-            this.initSnake();
-            setTimeout(this.moveSnake, 3000)
+            this.initSnake()
+                .then(() => {
+                    this.startGameLoop()
+                })
+            // setTimeout(this.startGameLoop(), 8000)
 
         }
     }
@@ -191,7 +245,7 @@
     .cell {
         z-index: 1000;
         border: 1px solid rgba(159, 159, 159, 0.75) !important;
-        animation: zoomIn 1.5s;
+        animation: zoomIn 1s;
         background: #51b0ff;
         position: relative;
     }
@@ -206,7 +260,7 @@
         width: 100%;
         z-index: 100000;
         position: absolute;
-        animation: zoomInUp 3s;
+        /*animation: zoomInUp 3s;*/
     }
 
     .snake-body {
