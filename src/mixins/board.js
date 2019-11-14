@@ -80,7 +80,7 @@ export default {
             }
         },
         addAnimation(food) {
-            const time = '3.5s';
+            const time = '2.5s';
             switch (Math.ceil(Math.random() * 5)) {
                 case 1:
                     food.style.animation = `zoomInRight ${time}`;
