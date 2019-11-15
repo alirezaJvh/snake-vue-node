@@ -32,8 +32,8 @@ export default {
             this.snake.direction = 'down'
         },
         moveSnake() {
-            const body = this.snake.body;
-            this.$log.debug(body);
+            // const body = this.snake.body;
+            // this.$log.debug(body);
             this.changeSnakeBodyPositions();
             if (this.isHittingTheWall()) {
                 this.$log.debug('hitting the wall');
@@ -64,6 +64,9 @@ export default {
         },
         decreaseSnakeLength() {
             this.snake.body.pop()
+            const tail = this.snake.body.length - 1
+            const oldBodyCell = this.getSnakeBodyPart(tail);
+            this.removeSnakeBodyCell(oldBodyCell);
         },
         moveSnakeHead() {
             switch (this.snake.direction) {
@@ -88,7 +91,21 @@ export default {
             }
         },
         removeSnakeBodyCell(oldSnakeBody) {
-            oldSnakeBody.removeChild(oldSnakeBody.children[1]);
+            let children = oldSnakeBody.childNodes
+            // oldSnakeBody.removeChild(oldSnakeBody.children[1]);
+            let length = oldSnakeBody.childNodes.length
+            for (let i = 0 ; i < length; i++) {
+                if (oldSnakeBody.childNodes[i].className === 'snake-head') {
+                    oldSnakeBody.removeChild(oldSnakeBody.childNodes[i]);
+                    length = oldSnakeBody.childNodes.length
+                    i -= 1
+                }
+                if (oldSnakeBody.childNodes[i].className === 'snake-body') {
+                    oldSnakeBody.removeChild(oldSnakeBody.childNodes[i]);
+                    length = oldSnakeBody.childNodes.length
+                    i -= 1
+                }
+            }
         },
         removeHeadSnakeCell() {
             let oldSnakeHead = this.getSnakeBodyPart(0);
@@ -103,6 +120,7 @@ export default {
                     food: part.food
                 })
             });
+            this.$log.debug('get old positions', oldParts)
             return oldParts
         },
         getSnakeHeadCell() {
@@ -143,9 +161,9 @@ export default {
                 default:
                     break;
             }
+
             this.snake.body.unshift(this.cells[`${x}-${y}`]);
             this.$log.debug(`x head : ${x} , y head : ${y}`)
-            this.$log.debug('cell', this.cells[`${x}-${y}`])
 
         },
         snakeEatFood() {
@@ -182,6 +200,20 @@ export default {
             let snakeBody = document.createElement('div');
             snakeBody.classList.add(snakeClass);
             return snakeBody
-        }
+        },
+        startGameLoop() {
+            if (!this.snake.isRunning) return false;
+            this.$log.debug('start game loop');
+            this.interval = setInterval(() => {
+                this.chooseNextDirection();
+                this.moveSnake();
+            }, this.snake.speed)
+        },
+        stopTheGame() {
+            this.snake.isRunning = false;
+            clearInterval(this.interval);
+            this.$log.debug('stop game');
+            // window.alert('game over')
+        },
     }
 }

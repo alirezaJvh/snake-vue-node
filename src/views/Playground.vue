@@ -39,7 +39,7 @@
         data: () => ({
             snake: {
                 isRunning: true,
-                initLength: 4,
+                initLength: 1,
                 speed: 1500,
                 direction: 'right',
                 body: []
@@ -49,23 +49,9 @@
         }),
         mixins: [boardMixin, snakeMixin],
         methods: {
-            startGameLoop() {
-                if (!this.snake.isRunning) return false;
-                this.$log.debug('start game loop');
-                this.interval = setInterval(() => {
-                    this.chooseNextDirection();
-                    this.moveSnake();
-                }, this.snake.speed)
-            },
-            stopTheGame() {
-                this.snake.isRunning = false;
-                clearInterval(this.interval);
-                this.$log.debug('stop game');
-                window.alert('game over')
-            },
+
             isHittingTheWall() {
                 let head = this.snake.body[0];
-                this.$log.debug(this.snake.body);
                 if (head.x > this.boardWidth || head.x < 1) return true;
                 if (head.y > this.boardHeight || head.y < 1) return true;
                 return false

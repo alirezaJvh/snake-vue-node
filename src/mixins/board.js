@@ -35,11 +35,10 @@ export default {
             }
         },
         initFoodScore() {
-            let score = Math.ceil((Math.random() * 3));
+            let score = Math.ceil((Math.random() * 9) );
             return (score === 10 ? 9 : score);
         },
         randomBackground() {
-            this.$log.debug('coloring food');
             let bgColor = Math.floor(Math.random() * 10);
             switch (bgColor) {
                 case 0:
