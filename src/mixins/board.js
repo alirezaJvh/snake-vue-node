@@ -35,10 +35,11 @@ export default {
             }
         },
         initFoodScore() {
-            let score = Math.ceil((Math.random() * 10));
+            let score = Math.ceil((Math.random() * 3));
             return (score === 10 ? 9 : score);
         },
         randomBackground() {
+            this.$log.debug('coloring food');
             let bgColor = Math.floor(Math.random() * 10);
             switch (bgColor) {
                 case 0:
@@ -64,6 +65,7 @@ export default {
             }
         },
         foodScoreStyle() {
+            this.$log.debug('style food');
             const coef = 3;
             let x = 1;
             while (x <= this.boardWidth) {
