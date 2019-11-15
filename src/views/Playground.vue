@@ -40,10 +40,12 @@
             snake: {
                 isRunning: true,
                 initLength: 1,
-                speed: 1500,
+                speed: 600,
                 direction: 'right',
                 body: []
             },
+            x_0: 8,
+            y_0: 8,
             scores: 0,
             interval: null
         }),

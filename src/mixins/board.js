@@ -1,10 +1,11 @@
 export default {
     data: () => ({
-        boardWidth: 16, // means 50 cell not 50px
-        boardHeight: 16,
+        boardWidth: 20, // means 50 cell not 50px
+        boardHeight: 20,
         cellWidth: 40, // for example means each cell width is 2px
         cellHeight: 40,
         cells: {},
+        maxScoreFood: 5
     }),
     methods: {
         makeBoardGame() {
@@ -35,7 +36,7 @@ export default {
             }
         },
         initFoodScore() {
-            let score = Math.ceil((Math.random() * 9) );
+            let score = Math.ceil((Math.random() * this.maxScoreFood));
             return (score === 10 ? 9 : score);
         },
         randomBackground() {
