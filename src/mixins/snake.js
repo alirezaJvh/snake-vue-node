@@ -1,4 +1,16 @@
 export default {
+    data: () => ({
+        x_0: 14,
+        y_0: 2,
+        interval: null,
+        snake: {
+            isRunning: true,
+            initLength: 1,
+            speed: 90,
+            direction: 'right',
+            body: []
+        },
+    }),
     methods: {
         initSnake() {
             return new Promise((resolve => {
@@ -18,10 +30,12 @@ export default {
         },
         drawSnake() {
             for (let i = 0; i < this.snake.body.length; i++) {
-                if (i > 0) {
-                    this.getSnakeBodyPart(i).appendChild(this.makeSnakeBody('snake-body'))
-                } else {
-                    this.getSnakeBodyPart(i).appendChild(this.makeSnakeBody('snake-head'))
+                if (typeof this.getSnakeBodyPart(i) !== 'undefined') {
+                    if (i > 0) {
+                        this.getSnakeBodyPart(i).appendChild(this.makeSnakeBody('snake-body'))
+                    } else {
+                        this.getSnakeBodyPart(i).appendChild(this.makeSnakeBody('snake-head'))
+                    }
                 }
             }
             if (this.isSnakeOnItself()) {
@@ -30,24 +44,21 @@ export default {
         },
         chooseNextDirection() {
             // this.snake.direction = 'down'
-            let rand = Math.ceil(Math.random() * 4)
-            this.$log.debug(rand)
-            if (rand === 1) {
-                if (this.snake.direction !== 'up') {
-                    this.snake.direction = 'down'
-                }
-            }
-            if (rand === 2) {
+            // this.findPath_bfs();
+            let [x, y] = [this.snake.body[0].x, this.snake.body[0].y];
+            if (this.canGoRight(x, y)) {
                 if (this.snake.direction !== 'left') {
                     this.snake.direction = 'right'
                 }
-            }
-            if (rand === 3) {
+            } else if (this.canGoUp(x, y)) {
                 if (this.snake.direction !== 'down') {
                     this.snake.direction = 'up'
                 }
-            }
-            if (rand === 0) {
+            } else if (this.canGoDown(x, y)) {
+                if (this.snake.direction !== 'up') {
+                    this.snake.direction = 'down'
+                }
+            } else if (this.canGoLeft(x, y)) {
                 if (this.snake.direction !== 'right') {
                     this.snake.direction = 'left'
                 }
@@ -58,7 +69,7 @@ export default {
             // this.$log.debug(body);
             if (this.isHittingTheWall()) {
                 this.$log.debug('hitting the wall');
-                this.stopTheGame()
+                this.stopTheGame();
                 return
             }
             this.changeSnakeBodyPositions();
@@ -174,30 +185,46 @@ export default {
                 return
             }
             let [x, y] = [this.snake.body[0].x, this.snake.body[0].y];
-            switch (this.snake.direction) {
-                case 'up':
-                    this.$log.debug('**** increase up****');
-                    x -= 1;
-                    break;
-                case 'down':
-                    this.$log.debug('***** increase down *****');
-                    x += 1;
-                    break;
-                case 'right':
-                    this.$log.debug('***** increase right *****');
-                    y += 1;
-                    break;
-                case 'left':
-                    this.$log.debug('***** increase left ******');
-                    y -= 1;
-                    break;
-                default:
-                    break;
+            this.$log.debug('here x', x, 'here y', y);
+
+            if (this.canGoUp(x, y)) {
+                this.snake.direction = 'up';
+                x -= 1;
+                this.snake.body.unshift(this.cells[`${x}-${y}`]);
+                this.logMove(x, y, 'up')
+
+            } else if (this.canGoDown(x, y)) {
+                this.snake.direction = 'down';
+                x += 1;
+                this.snake.body.unshift(this.cells[`${x}-${y}`]);
+                this.logMove(x, y, 'down')
+            } else if (this.canGoRight(x, y)) {
+                this.snake.direction = 'right';
+                y += 1;
+                this.snake.body.unshift(this.cells[`${x}-${y}`]);
+                this.logMove(x, y, 'right')
+            } else if (this.canGoLeft(x, y)) {
+                this.snake.direction = 'left';
+                y -= 1;
+                this.snake.body.unshift(this.cells[`${x}-${y}`]);
+                this.logMove(x, y, 'left')
             }
-
-            this.snake.body.unshift(this.cells[`${x}-${y}`]);
-            this.$log.debug(`x head : ${x} , y head : ${y}`)
-
+        },
+        logMove(x, y, direction) {
+            this.$log.debug(`x head : ${x} , y head : ${y}`);
+            this.$log.debug(`***** increase ${direction} ******`);
+        },
+        canGoRight(x, y) {
+            return typeof this.$refs[`${x}-${y + 1}`] !== 'undefined';
+        },
+        canGoLeft(x, y) {
+            return typeof this.$refs[`${x}-${y - 1}`] !== 'undefined';
+        },
+        canGoDown(x, y) {
+            return typeof this.$refs[`${x + 1}-${y}`] !== 'undefined';
+        },
+        canGoUp(x, y) {
+            return typeof this.$refs[`${x + 1}-${y}`] !== 'undefined';
         },
         snakeEatFood() {
             this.increaseSnakeScore();
@@ -206,9 +233,11 @@ export default {
             clearInterval(this.interval);
             let i = 1;
             let interval = setInterval(() => {
-                this.addSnakeBody();
-                this.drawSnake();
-                i += 1;
+                if (this.snake.isRunning) {
+                    this.addSnakeBody();
+                    this.drawSnake();
+                    i += 1;
+                }
                 if (i > score) {
                     clearInterval(interval);
                     this.startGameLoop();
@@ -216,7 +245,7 @@ export default {
             }, this.snake.speed)
         },
         increaseSnakeScore() {
-            const c = 5;
+            const c = 10;
             let score = this.snake.body[0].food;
             this.$log.debug('get score', score);
             this.scores += c * score + 1
@@ -227,7 +256,11 @@ export default {
         },
         getSnakeBodyPart(index) {
             let cell = this.snake.body[index];
-            return this.$refs[`${cell.x}-${cell.y}`][0]
+            if (typeof cell !== 'undefined') {
+                if (typeof this.$refs[`${cell.x}-${cell.y}`] !== 'undefined') {
+                    return this.$refs[`${cell.x}-${cell.y}`][0]
+                }
+            }
         },
         makeSnakeBody(snakeClass) {
             let snakeBody = document.createElement('div');
@@ -235,18 +268,22 @@ export default {
             return snakeBody
         },
         startGameLoop() {
-            if (!this.snake.isRunning) return false;
-            this.$log.debug('start game loop');
-            this.interval = setInterval(() => {
-                this.chooseNextDirection();
-                this.moveSnake();
-            }, this.snake.speed)
+            if (this.snake.isRunning) {
+                this.$log.debug('start game loop');
+                this.interval = setInterval(() => {
+                    // this.chooseNextDirection();
+                    this.moveSnake();
+                }, this.snake.speed)
+            }
+
         },
         stopTheGame() {
             this.snake.isRunning = false;
             clearInterval(this.interval);
+            this.gameOver = true;
+            // window.location.reload(true);
             this.$log.debug('stop game');
-            // window.alert('game over')
+            window.alert('game over')
         },
     }
 }

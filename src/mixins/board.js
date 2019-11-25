@@ -1,11 +1,11 @@
 export default {
     data: () => ({
-        boardWidth: 20, // means 50 cell not 50px
-        boardHeight: 20,
+        boardWidth: 15, // means n cell not npx
+        boardHeight: 15,
         cellWidth: 40, // for example means each cell width is 2px
         cellHeight: 40,
         cells: {},
-        maxScoreFood: 5
+        maxScoreFood: 6
     }),
     methods: {
         makeBoardGame() {
@@ -66,15 +66,15 @@ export default {
         },
         foodScoreStyle() {
             this.$log.debug('style food');
-            const coef = 3;
+            const coefficient = 3;
             let x = 1;
             while (x <= this.boardWidth) {
                 let y = 1;
                 while (y <= this.boardHeight) {
                     let cell = this.$refs[`${x}-${y}`][0];
                     let food = cell.children[0];
-                    food.style.width = `${this.cells[`${x}-${y}`].food * coef}px`;
-                    food.style.height = `${this.cells[`${x}-${y}`].food * coef}px`;
+                    food.style.width = `${this.cells[`${x}-${y}`].food * coefficient}px`;
+                    food.style.height = `${this.cells[`${x}-${y}`].food * coefficient}px`;
                     this.addAnimation(food);
                     y++;
                 }

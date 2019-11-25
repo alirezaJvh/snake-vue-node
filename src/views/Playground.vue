@@ -8,14 +8,15 @@
 
             <v-col cols="12"
                    class="d-flex justify-center align-center my-2 board-container">
-                <div ref="board" class="d-flex flex-row flex-wrap ">
+                <div ref="board"
+                     class="d-flex flex-row flex-wrap">
                     <div v-for="y in boardHeight"
                          :key="y">
                         <div v-for="x in boardWidth"
                              :key="x">
                             <div :ref="`${x}-${y}`"
                                  :id="`${x}-${y}`"
-                                 class="cell d-flex justify-center align-center "
+                                 class="cell d-flex justify-center align-center"
                                  :style="{width:`${cellWidth}px`, height: `${cellHeight}px`}">
                                 <div class="food"
                                      :class="randomBackground()">
@@ -32,32 +33,30 @@
 <script>
     import boardMixin from '../mixins/board'
     import snakeMixin from '../mixins/snake'
+    import bfsMixin from '../mixins/bfs'
 
     export default {
         name: 'playground',
         components: {},
         data: () => ({
-            snake: {
-                isRunning: true,
-                initLength: 1,
-                speed: 600,
-                direction: 'right',
-                body: []
-            },
-            x_0: 8,
-            y_0: 8,
             scores: 0,
-            interval: null
-        }),
-        mixins: [boardMixin, snakeMixin],
-        methods: {
 
+            gameOver: false
+        }),
+        mixins: [boardMixin, snakeMixin, bfsMixin],
+        methods: {
             isHittingTheWall() {
                 let head = this.snake.body[0];
-                if (head.x > this.boardWidth || head.x < 1) return true;
-                if (head.y > this.boardHeight || head.y < 1) return true;
-                return false
+                if (typeof head != 'undefined') {
+                    if (head.x > this.boardWidth || head.x < 1) return true;
+                    if (head.y > this.boardHeight || head.y < 1) return true;
+                    return false
+                } else {
+                    // head is undefined
+                    return true
+                }
             },
+
         },
         mounted() {
             this.makeBoardGame();
