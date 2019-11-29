@@ -2,8 +2,8 @@
 
 export default {
     data: () => ({
-        x_0: 14,
-        y_0: 2,
+        x_0: 15,
+        y_0: 5,
         interval: null,
         snake: {
             isRunning: true,
