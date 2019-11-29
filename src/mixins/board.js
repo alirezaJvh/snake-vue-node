@@ -21,6 +21,10 @@ export default {
         initCell() {
             // this.$log.debug('init cell');
             let y = 1;
+            this.cells.info = {
+                maxWidth: this.boardWidth,
+                maxHeight: this.boardHeight
+            }
             while (y <= this.boardHeight) {
                 let x = 1;
                 while (x <= this.boardWidth) {

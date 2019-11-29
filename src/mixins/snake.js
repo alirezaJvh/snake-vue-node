@@ -1,3 +1,5 @@
+
+
 export default {
     data: () => ({
         x_0: 14,
@@ -10,6 +12,7 @@ export default {
             direction: 'right',
             body: []
         },
+        scores: 0,
     }),
     methods: {
         initSnake() {
@@ -36,49 +39,23 @@ export default {
                     } else {
                         this.getSnakeBodyPart(i).appendChild(this.makeSnakeBody('snake-head'))
                     }
-                }
-            }
-            if (this.isSnakeOnItself()) {
-                this.stopTheGame()
-            }
-        },
-        chooseNextDirection() {
-            // this.snake.direction = 'down'
-            // this.findPath_bfs();
-            let [x, y] = [this.snake.body[0].x, this.snake.body[0].y];
-            if (this.canGoRight(x, y)) {
-                if (this.snake.direction !== 'left') {
-                    this.snake.direction = 'right'
-                }
-            } else if (this.canGoUp(x, y)) {
-                if (this.snake.direction !== 'down') {
-                    this.snake.direction = 'up'
-                }
-            } else if (this.canGoDown(x, y)) {
-                if (this.snake.direction !== 'up') {
-                    this.snake.direction = 'down'
-                }
-            } else if (this.canGoLeft(x, y)) {
-                if (this.snake.direction !== 'right') {
-                    this.snake.direction = 'left'
+
                 }
             }
         },
         moveSnake() {
-            // const body = this.snake.body;
-            // this.$log.debug(body);
             if (this.isHittingTheWall()) {
                 this.$log.debug('hitting the wall');
                 this.stopTheGame();
                 return
             }
             this.changeSnakeBodyPositions();
-            if (this.canSnakeEatFood()) {
-                this.snakeEatFood()
-            } else {
-                this.decreaseSnakeLength()
-            }
-            this.drawSnake();
+            /* if (this.canSnakeEatFood()) {
+                 this.snakeEatFood()
+             } else {
+                 this.decreaseSnakeLength()
+             }
+             this.drawSnake();*/
         },
         changeSnakeBodyPositions() {
             const oldSnakeCoords = this.getOldSnakeCells();
@@ -130,7 +107,6 @@ export default {
             }
         },
         removeSnakeBodyCell(oldSnakeBody) {
-            let children = oldSnakeBody.childNodes;
             // oldSnakeBody.removeChild(oldSnakeBody.children[1]);
             let length = oldSnakeBody.childNodes.length;
             for (let i = 0; i < length; i++) {
@@ -178,77 +154,20 @@ export default {
             return isItsBodyOnHead
 
         },
-        addSnakeBody() {
-            if (this.isHittingTheWall()) {
-                this.$log.debug('hitting the wall');
-                this.stopTheGame();
-                return
-            }
-            let [x, y] = [this.snake.body[0].x, this.snake.body[0].y];
-            this.$log.debug('here x', x, 'here y', y);
-
-            if (this.canGoUp(x, y)) {
-                this.snake.direction = 'up';
-                x -= 1;
-                this.snake.body.unshift(this.cells[`${x}-${y}`]);
-                this.logMove(x, y, 'up')
-
-            } else if (this.canGoDown(x, y)) {
-                this.snake.direction = 'down';
-                x += 1;
-                this.snake.body.unshift(this.cells[`${x}-${y}`]);
-                this.logMove(x, y, 'down')
-            } else if (this.canGoRight(x, y)) {
-                this.snake.direction = 'right';
-                y += 1;
-                this.snake.body.unshift(this.cells[`${x}-${y}`]);
-                this.logMove(x, y, 'right')
-            } else if (this.canGoLeft(x, y)) {
-                this.snake.direction = 'left';
-                y -= 1;
-                this.snake.body.unshift(this.cells[`${x}-${y}`]);
-                this.logMove(x, y, 'left')
-            }
-        },
         logMove(x, y, direction) {
             this.$log.debug(`x head : ${x} , y head : ${y}`);
             this.$log.debug(`***** increase ${direction} ******`);
         },
-        canGoRight(x, y) {
-            return typeof this.$refs[`${x}-${y + 1}`] !== 'undefined';
-        },
-        canGoLeft(x, y) {
-            return typeof this.$refs[`${x}-${y - 1}`] !== 'undefined';
-        },
-        canGoDown(x, y) {
-            return typeof this.$refs[`${x + 1}-${y}`] !== 'undefined';
-        },
-        canGoUp(x, y) {
-            return typeof this.$refs[`${x + 1}-${y}`] !== 'undefined';
-        },
         snakeEatFood() {
             this.increaseSnakeScore();
             const score = this.snake.body[0].food;
-            this.$log.debug('snake eat ', score, `in x: ${this.snake.body[0].x}`, `in y: ${this.snake.body[0].y}`);
-            clearInterval(this.interval);
-            let i = 1;
-            let interval = setInterval(() => {
-                if (this.snake.isRunning) {
-                    this.addSnakeBody();
-                    this.drawSnake();
-                    i += 1;
-                }
-                if (i > score) {
-                    clearInterval(interval);
-                    this.startGameLoop();
-                }
-            }, this.snake.speed)
+            return score
         },
         increaseSnakeScore() {
             const c = 10;
             let score = this.snake.body[0].food;
-            this.$log.debug('get score', score);
-            this.scores += c * score + 1
+            // scoring
+            this.scores += c * score + 10
         },
         canSnakeEatFood() {
             // snake can meat food when its body length is one
@@ -271,9 +190,10 @@ export default {
             if (this.snake.isRunning) {
                 this.$log.debug('start game loop');
                 this.interval = setInterval(() => {
-                    // this.chooseNextDirection();
-                    this.moveSnake();
-                }, this.snake.speed)
+                    // this.moveSnake();
+                    const score = this.snakeEatFood();
+                    this.BFS_NEXT_PATH(score, this.snake, this.cells)
+                }, 1000)
             }
 
         },
@@ -281,7 +201,6 @@ export default {
             this.snake.isRunning = false;
             clearInterval(this.interval);
             this.gameOver = true;
-            // window.location.reload(true);
             this.$log.debug('stop game');
             window.alert('game over')
         },

@@ -34,16 +34,14 @@
     import boardMixin from '../mixins/board'
     import snakeMixin from '../mixins/snake'
     import bfsMixin from '../mixins/bfs'
-
+    import BFS from '../mixins/AI/bfs'
     export default {
         name: 'playground',
         components: {},
         data: () => ({
-            scores: 0,
-
             gameOver: false
         }),
-        mixins: [boardMixin, snakeMixin, bfsMixin],
+        mixins: [boardMixin, snakeMixin, bfsMixin, BFS],
         methods: {
             isHittingTheWall() {
                 let head = this.snake.body[0];
