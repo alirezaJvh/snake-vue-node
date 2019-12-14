@@ -1,5 +1,3 @@
-
-
 export default {
     data: () => ({
         x_0: 15,
@@ -189,11 +187,11 @@ export default {
         startGameLoop() {
             if (this.snake.isRunning) {
                 this.$log.debug('start game loop');
-                this.interval = setInterval(() => {
+                const score = this.snakeEatFood();
+                this.BFS_NEXT_PATH(score, this.snake, this.cells)
+               /* this.interval = setInterval(() => {
                     // this.moveSnake();
-                    const score = this.snakeEatFood();
-                    this.BFS_NEXT_PATH(score, this.snake, this.cells)
-                }, 1000)
+                }, 1000)*/
             }
 
         },

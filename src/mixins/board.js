@@ -5,7 +5,7 @@ export default {
         cellWidth: 40, // for example means each cell width is 2px
         cellHeight: 40,
         cells: {},
-        maxScoreFood: 6
+        maxScoreFood: 1
     }),
     methods: {
         makeBoardGame() {
