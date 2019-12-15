@@ -62,7 +62,7 @@ export default {
                 if (i === 0) {
                     /* if it's head, just increment/decrement X or Y depending on moving direction */
                     this.removeHeadSnakeCell();
-                    this.moveSnakeHead()
+                    // this.moveSnakeHead()
                 } else {
                     const oldBodyCell = this.getSnakeBodyPart(i);
                     this.removeSnakeBodyCell(oldBodyCell);
@@ -76,33 +76,6 @@ export default {
             const tail = this.snake.body.length - 1;
             const oldBodyCell = this.getSnakeBodyPart(tail);
             this.removeSnakeBodyCell(oldBodyCell);
-        },
-        moveSnakeHead() {
-            if (this.isHittingTheWall()) {
-                this.$log.debug('hitting the wall');
-                this.stopTheGame();
-                return
-            }
-            switch (this.snake.direction) {
-                case 'up':
-                    this.$log.warn('**** move up ****');
-                    this.snake.body[0].x -= 1;
-                    break;
-                case 'down':
-                    this.$log.warn('***** move down *****');
-                    this.snake.body[0].x += 1;
-                    break;
-                case 'right':
-                    this.$log.warn('***** move right *****');
-                    this.snake.body[0].y += 1;
-                    break;
-                case 'left':
-                    this.$log.warn('***** move left ******');
-                    this.snake.body[0].y -= 1;
-                    break;
-                default:
-                    break;
-            }
         },
         removeSnakeBodyCell(oldSnakeBody) {
             // oldSnakeBody.removeChild(oldSnakeBody.children[1]);
@@ -136,26 +109,6 @@ export default {
             this.$log.debug('get old positions', oldParts);
             return oldParts
         },
-        getSnakeHeadCell() {
-            // return cell which head snake is in it
-            return this.getSnakeBodyPart(0)
-        },
-        isSnakeOnItself() {
-            const snakeHead = this.getSnakeHeadCell();
-            let isItsBodyOnHead = false;
-            for (let i = 0; i < snakeHead.children.length; i++) {
-                // if snake head has children with snake-body class it means that snake head eat its body
-                if (snakeHead.classList.value.includes('snake-body')) {
-                    isItsBodyOnHead = true
-                }
-            }
-            return isItsBodyOnHead
-
-        },
-        logMove(x, y, direction) {
-            this.$log.debug(`x head : ${x} , y head : ${y}`);
-            this.$log.debug(`***** increase ${direction} ******`);
-        },
         snakeEatFood() {
             this.increaseSnakeScore();
             const score = this.snake.body[0].food;
@@ -188,7 +141,8 @@ export default {
             if (this.snake.isRunning) {
                 this.$log.debug('start game loop');
                 const score = this.snakeEatFood();
-                this.BFS_NEXT_PATH(score, this.snake, this.cells)
+                // this.BFS_NEXT_PATH(score, this.snake, this.cells)
+                let path = this.DFS_NEXT_PATH(score, this.snake, this.cells)
                /* this.interval = setInterval(() => {
                     // this.moveSnake();
                 }, 1000)*/
