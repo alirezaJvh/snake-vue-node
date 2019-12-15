@@ -1,28 +1,49 @@
 export default {
+    data: () => ({
+        path: []
+    }),
     methods: {
         DFS_NEXT_PATH(score, snake, cells) {
             this.$log.debug('DFS');
-            let path = [];
+            this.$log.debug('score', score);
             let snakeHead = cells[`${snake.body[0].x}-${snake.body[0].y}`];
-            let [pathLenght, counter] = [2 * score, 5];
-            while (counter < pathLenght) {
-                let child;
-                if (counter === 0) {
-                    child = this.chooseOnChild(this.dfsNode(snakeHead, undefined), cells);
-                } else {
-
-                }
+            let [pathLength, counter] = [2 * score, 1];
+            this.path.push(snakeHead);
+            while (counter <= pathLength) {
+                let child = this.chooseOnChild(this.path[counter - 1], cells);
+                this.path.push(child);
                 counter++;
             }
+            this.path.shift();
+            this.showPath();
+            return this.path
+
+        },
+
+        showPath() {
+            this.path.forEach(p => {
+                this.$log.debug('x: ', p.x, ' y: ', p.y)
+            })
         },
 
         chooseOnChild(node, cells) {
-            let children = this.checkChildren(node, cells)
-            this.$log.debug(children);
+            let directions = this.checkAvailablePath(node, cells);
+            let randNum;
+            let child;
+            if (this.path.length === 0) {
+                randNum = this.randNum(directions.length);
+                child = this.getChildren(node, cells, directions[randNum]);
+                return child
+            } else {
+                directions = this.childrenAreNotInPath(node, cells, directions);
+                randNum = this.randNum(directions.length);
+                child = this.getChildren(node, cells, directions[randNum]);
+                return child
+            }
         },
 
-        checkChildren(node, cells) {
-            let parent = node.cell;
+        checkAvailablePath(node, cells) {
+            let parent = node;
             if (parent.x === 1) {
                 if (parent.y === 1) {
                     //    down, right
@@ -58,11 +79,51 @@ export default {
                 }
             }
         },
-        dfsNode(cell, direction) {
-            return {
-                cell,
-                direction
+
+        getChildren(parent, cells, dir) {
+            let node = null;
+            if (dir === 'down') {
+                node = cells[`${parent.x + 1}-${parent.y}`];
+                return node
+
+            } else if (dir === 'up') {
+                node = cells[`${parent.x - 1}-${parent.y}`];
+                return node
+
+            } else if (dir === 'right') {
+                node = cells[`${parent.x}-${parent.y + 1}`];
+                return node
+
+            } else if (dir === 'left') {
+                node = cells[`${parent.x}-${parent.y - 1}`];
+                return node
+
             }
+            // this.$log.debug('children', children);
+        },
+
+        childrenAreNotInPath(node, cells, directions) {
+            // this.$log.debug('all path', directions);
+            let goodChildren = [];
+            directions.forEach(dir => {
+                let child = this.getChildren(node, cells, dir);
+                let flag = true;
+                this.path.forEach(p => {
+                    if ((p.x === child.x) && (p.y === child.y)) {
+                        flag = false
+                    }
+                });
+                if (flag) {
+                    goodChildren.push(dir)
+                }
+            });
+            // this.$log.debug('good', goodChildren);
+            return goodChildren
+        },
+
+        randNum(max) {
+            return Math.floor(Math.random() * max)
         }
+
     }
 }
